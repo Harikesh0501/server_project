@@ -1,0 +1,58 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+venv/
+.venv/
+ENV/
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+dist/
+.next/
+out/
+
+# Environment & Secrets (Zero-Trust)
+.env
+.env.*
+*.env
+*.pem
+*.key
+master.key
+credentials.json
+service-account*.json
+
+# Databases & Local Data
+*.db
+*.sqlite
+*.sqlite3
+deploy_platform.db
+data/
+server/data/
+
+# OS Specific
+.DS_Store
+Thumbs.db
+desktop.ini
