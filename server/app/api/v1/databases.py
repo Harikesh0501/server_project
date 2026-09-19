@@ -69,10 +69,21 @@ async def list_databases(project_id: str | None = Query(None), db: AsyncSession 
         query = query.where(ManagedDatabase.project_id == project_id)
     
     query = query.order_by(ManagedDatabase.created_at.desc())
-    result = await db.execute(query)
-    databases = result.scalars().all()
+    items = []
+    for d in databases:
+        decrypted_url = None
+        if d.connection_url_secret_id and d.status == "RUNNING":
+            try:
+                decrypted_url = await secret_manager.get_decrypted_secret(
+                    d.project_id,
+                    "DATABASE_URL" if d.engine == "postgres" else "REDIS_URL",
+                    db
+                )
+            except Exception:
+                pass
+        items.append(_format_db_response(d, decrypted_url))
 
-    return [_format_db_response(d) for d in databases]
+    return items
 
 @router.get("/{database_id}", response_model=DatabaseResponse)
 async def get_database(database_id: str, db: AsyncSession = Depends(get_db)):
