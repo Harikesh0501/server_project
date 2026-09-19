@@ -1,4 +1,5 @@
 import os
+import asyncio
 import httpx
 from typing import AsyncGenerator
 from app.config import settings
@@ -20,8 +21,29 @@ class DockerService:
             self.base_url = "http://docker"
             self.transport = httpx.AsyncHTTPTransport(uds=settings.DOCKER_SOCKET)
 
-    def _get_client(self) -> httpx.AsyncClient:
-        return httpx.AsyncClient(transport=self.transport, base_url=self.base_url, timeout=60.0)
+    def _get_client(self, timeout: float = 120.0) -> httpx.AsyncClient:
+        return httpx.AsyncClient(transport=self.transport, base_url=self.base_url, timeout=timeout)
+
+    async def pull_image(self, image: str) -> None:
+        """Pulls a container image if not present locally."""
+        try:
+            proc = await asyncio.create_subprocess_exec(
+                "docker", "pull", image,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            stdout, stderr = await proc.communicate()
+            if proc.returncode == 0:
+                return
+        except Exception:
+            pass
+
+        # Fallback to Docker Engine API
+        async with self._get_client(timeout=300.0) as client:
+            res = await client.post(f"/images/create?fromImage={image}")
+            if res.status_code != 200:
+                raise RuntimeError(f"Failed to pull image {image}: {res.text}")
+
 
     async def ping(self) -> bool:
         """Pings the local Docker Engine daemon."""
@@ -75,9 +97,15 @@ class DockerService:
 
         async with self._get_client() as client:
             res = await client.post(f"/containers/create?name={name}", json=payload)
+            if res.status_code == 404 and "No such image" in res.text:
+                # Automatically pull missing image and retry once
+                await self.pull_image(image)
+                res = await client.post(f"/containers/create?name={name}", json=payload)
+
             if res.status_code != 201:
                 raise RuntimeError(f"Docker container creation failed: {res.text}")
             return res.json()
+
 
     async def exec_run(self, container_id: str, cmd: list[str]) -> tuple[int, str]:
         """

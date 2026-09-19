@@ -85,6 +85,7 @@ class DatabaseProvisionerService:
                 if engine.lower() == "postgres":
                     # Task 10.2: PostgreSQL 16 Isolated Provisioning
                     image = f"postgres:{version}-alpine" if version else "postgres:16-alpine"
+                    await docker_service.pull_image(image)
                     envs = [
                         f"POSTGRES_USER={db_record.username}",
                         f"POSTGRES_DB={db_record.database_name}",
@@ -128,8 +129,10 @@ class DatabaseProvisionerService:
                 else:
                     # Task 10.3: Redis 7 Isolated Provisioning
                     image = f"redis:{version}-alpine" if version else "redis:7-alpine"
+                    await docker_service.pull_image(image)
                     binds = [f"{db_dir}:/data:rw"]
                     cmd = ["redis-server", "--requirepass", password, "--appendonly", "yes"]
+
 
                     c_data = await docker_service.create_container(
                         image=image,
