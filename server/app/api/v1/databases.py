@@ -69,6 +69,9 @@ async def list_databases(project_id: str | None = Query(None), db: AsyncSession 
         query = query.where(ManagedDatabase.project_id == project_id)
     
     query = query.order_by(ManagedDatabase.created_at.desc())
+    result = await db.execute(query)
+    databases = result.scalars().all()
+
     items = []
     for d in databases:
         decrypted_url = None
