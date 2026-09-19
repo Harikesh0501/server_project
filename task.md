@@ -333,38 +333,38 @@
 ## EPIC-07: Asynchronous Job Queue, Worker Daemons & Task Orchestration
 
 ### Task 7.1: Redis 7 Deployment & ARQ Worker Architecture
-- [ ] **Mini-Task 7.1.1**: Provision Redis 7 container on host bound to `127.0.0.1:6379` with persistent AOF storage.
+- [x] **Mini-Task 7.1.1**: Provision Redis 7 container on host bound to `127.0.0.1:6379` with persistent AOF storage.
 - [ ] **Mini-Task 7.1.2**: Implement ARQ worker settings (`server/app/worker/settings.py`) with max 10 concurrent jobs.
 - [ ] **Mini-Task 7.1.3**: Configure job timeout (900 seconds) and automatic retry policy for network-related failures.
 - [ ] **Mini-Task 7.1.4**: Create systemd service unit `/etc/systemd/system/deploy-worker.service` to keep ARQ worker active.
 
 ### Task 7.2: Build Execution Background Task
-- [ ] **Mini-Task 7.2.1**: Implement `execute_build_task` in `server/app/worker/tasks.py`.
-- [ ] **Mini-Task 7.2.2**: Download and extract source tarball into isolated build workspace `/tmp/deploy_builds/{job_id}`.
-- [ ] **Mini-Task 7.2.3**: Execute BuildKit build command streaming logs line-by-line into Redis channel.
-- [ ] **Mini-Task 7.2.4**: Push successfully built image to local registry `127.0.0.1:5000/{project}:{id}`.
-- [ ] **Mini-Task 7.2.5**: Clean up temporary build workspace directory upon task completion or failure.
+- [x] **Mini-Task 7.2.1**: Implement `execute_build_task` in `server/app/worker/tasks.py`.
+- [x] **Mini-Task 7.2.2**: Download and extract source tarball into isolated build workspace `/tmp/deploy_builds/{job_id}`.
+- [x] **Mini-Task 7.2.3**: Execute BuildKit build command streaming logs line-by-line into Redis channel.
+- [x] **Mini-Task 7.2.4**: Push successfully built image to local registry `127.0.0.1:5000/{project}:{id}`.
+- [x] **Mini-Task 7.2.5**: Clean up temporary build workspace directory upon task completion or failure.
 
 ### Task 7.3: Deployment Provisioning Background Task
-- [ ] **Mini-Task 7.3.1**: Implement `execute_deployment_task` in `server/app/worker/tasks.py`.
-- [ ] **Mini-Task 7.3.2**: Resolve environment variables, decrypt secrets in-memory.
-- [ ] **Mini-Task 7.3.3**: Launch target number of container replicas (`min_replicas`, default 3) attached to `deploy-private-net`.
-- [ ] **Mini-Task 7.3.4**: Record container IDs, internal IPs, and ports in `container_replicas` table.
-- [ ] **Mini-Task 7.3.5**: Trigger health verification and traffic cutover workflows.
+- [x] **Mini-Task 7.3.1**: Implement `execute_deployment_task` in `server/app/worker/tasks.py`.
+- [x] **Mini-Task 7.3.2**: Resolve environment variables, decrypt secrets in-memory.
+- [x] **Mini-Task 7.3.3**: Launch target number of container replicas (`min_replicas`, default 3) attached to `deploy-private-net`.
+- [x] **Mini-Task 7.3.4**: Record container IDs, internal IPs, and ports in `container_replicas` table.
+- [x] **Mini-Task 7.3.5**: Trigger health verification and traffic cutover workflows.
 
 ### Task 7.4: Dead-Letter Queue & Worker Error Governance
-- [ ] **Mini-Task 7.4.1**: Implement failure handler: on uncaught task exception, transition deployment state to `FAILED`.
-- [ ] **Mini-Task 7.4.2**: Record detailed traceback and failure reason in `deployments.error_message`.
-- [ ] **Mini-Task 7.4.3**: Clean up any orphaned containers created during the aborted deployment.
-- [ ] **Mini-Task 7.4.4**: Trigger AI Doctor diagnostic routine in background to prepare immediate fix suggestion.
+- [x] **Mini-Task 7.4.1**: Implement failure handler: on uncaught task exception, transition deployment state to `FAILED`.
+- [x] **Mini-Task 7.4.2**: Record detailed traceback and failure reason in `deployments.error_message`.
+- [x] **Mini-Task 7.4.3**: Clean up any orphaned containers created during the aborted deployment.
+- [x] **Mini-Task 7.4.4**: Trigger AI Doctor diagnostic routine in background to prepare immediate fix suggestion.
 
 ---
 
 ## EPIC-08: Zero-Downtime Blue-Green Deployment & Health Verification Engine
 
 ### Task 8.1: Finite State Machine (FSM) Engine
-- [ ] **Mini-Task 8.1.1**: Implement `DeploymentFSM` class in Python managing state transitions.
-- [ ] **Mini-Task 8.1.2**: Define valid transitions:
+- [x] **Mini-Task 8.1.1**: Implement `DeploymentFSM` class in Python managing state transitions.
+- [x] **Mini-Task 8.1.2**: Define valid transitions:
   - `CREATED` &rarr; `QUARANTINING`
   - `QUARANTINING` &rarr; `BUILDING`
   - `BUILDING` &rarr; `PROVISIONING_GREEN`
@@ -372,36 +372,36 @@
   - `VERIFYING_CLUSTER` &rarr; `TRAFFIC_SWAP`
   - `TRAFFIC_SWAP` &rarr; `TEARDOWN_BLUE` &rarr; `SUCCESS`
   - Any active state &rarr; `FAILED` on unrecoverable error
-- [ ] **Mini-Task 8.1.3**: Persist every state change with timestamp and actor in `deployment_logs`.
-- [ ] **Mini-Task 8.1.4**: Broadcast state change events via Redis Pub/Sub to active SSE/WebSocket clients.
+- [x] **Mini-Task 8.1.3**: Persist every state change with timestamp and actor in `deployment_logs`.
+- [x] **Mini-Task 8.1.4**: Broadcast state change events via Redis Pub/Sub to active SSE/WebSocket clients.
 
 ### Task 8.2: Hardened Container Runtime Provisioning
-- [ ] **Mini-Task 8.2.1**: Enforce unprivileged user execution (`User: "10001:10001"`).
-- [ ] **Mini-Task 8.2.2**: Mount root filesystem as read-only (`ReadonlyRootfs: true`).
-- [ ] **Mini-Task 8.2.3**: Mount temporary writable `/tmp` as in-memory tmpfs (`Tmpfs: {"/tmp": "rw,noexec,nosuid,size=64m"}`).
-- [ ] **Mini-Task 8.2.4**: Drop all Linux capabilities (`CapDrop: ["ALL"]`) and set `NoNewPrivileges: true`.
-- [ ] **Mini-Task 8.2.5**: Set restart policy to `unless-stopped` with max 5 retry attempts.
+- [x] **Mini-Task 8.2.1**: Enforce unprivileged user execution (`User: "10001:10001"`).
+- [x] **Mini-Task 8.2.2**: Mount root filesystem as read-only (`ReadonlyRootfs: true`).
+- [x] **Mini-Task 8.2.3**: Mount temporary writable `/tmp` as in-memory tmpfs (`Tmpfs: {"/tmp": "rw,noexec,nosuid,size=64m"}`).
+- [x] **Mini-Task 8.2.4**: Drop all Linux capabilities (`CapDrop: ["ALL"]`) and set `NoNewPrivileges: true`.
+- [x] **Mini-Task 8.2.5**: Set restart policy to `unless-stopped` with max 5 retry attempts.
 
 ### Task 8.3: Automated Multi-Replica Health Checker
-- [ ] **Mini-Task 8.3.1**: Implement async health-probe service using `httpx.AsyncClient`.
-- [ ] **Mini-Task 8.3.2**: Read health check path (default `/` or `/health`), expected status (200 OK), and timeout (5s) from config.
-- [ ] **Mini-Task 8.3.3**: Execute concurrent probes against every newly spawned "Green" replica's private IP.
-- [ ] **Mini-Task 8.3.4**: Implement retry loop: up to 10 attempts with 2-second intervals before declaring failure.
-- [ ] **Mini-Task 8.3.5**: If ANY replica fails all attempts, mark deployment `FAILED` and do NOT switch traffic.
+- [x] **Mini-Task 8.3.1**: Implement async health-probe service using `httpx.AsyncClient`.
+- [x] **Mini-Task 8.3.2**: Read health check path (default `/` or `/health`), expected status (200 OK), and timeout (5s) from config.
+- [x] **Mini-Task 8.3.3**: Execute concurrent probes against every newly spawned "Green" replica's private IP.
+- [x] **Mini-Task 8.3.4**: Implement retry loop: up to 10 attempts with 2-second intervals before declaring failure.
+- [x] **Mini-Task 8.3.5**: If ANY replica fails all attempts, mark deployment `FAILED` and do NOT switch traffic.
 
 ### Task 8.4: Atomic Reverse Proxy Traffic Cutover
-- [ ] **Mini-Task 8.4.1**: Build `CaddyLoadBalancerService` communicating with Caddy Admin API (`127.0.0.1:2019`).
-- [ ] **Mini-Task 8.4.2**: Generate Caddy reverse proxy upstream JSON payload containing all healthy "Green" replica IPs.
-- [ ] **Mini-Task 8.4.3**: Execute atomic HTTP `PATCH` to `/config/apps/http/servers/srv0/routes/...` updating upstream pool.
-- [ ] **Mini-Task 8.4.4**: Verify Caddy returns HTTP 200 OK confirming traffic is now routed to Green replicas.
+- [x] **Mini-Task 8.4.1**: Build `CaddyLoadBalancerService` communicating with Caddy Admin API (`127.0.0.1:2019`).
+- [x] **Mini-Task 8.4.2**: Generate Caddy reverse proxy upstream JSON payload containing all healthy "Green" replica IPs.
+- [x] **Mini-Task 8.4.3**: Execute atomic HTTP `PATCH` to `/config/apps/http/servers/srv0/routes/...` updating upstream pool.
+- [x] **Mini-Task 8.4.4**: Verify Caddy returns HTTP 200 OK confirming traffic is now routed to Green replicas.
 - [ ] **Mini-Task 8.4.5**: Implement Sub-100ms Instant Atomic Rollback (`POST /api/v1/deployments/{id}/rollback`): bypasses compilation entirely, launches containers from existing immutable registry image tag in under 2 seconds, verifies health, and performs sub-100ms Caddy upstream cutover.
 
 ### Task 8.5: Graceful Draining & Decommissioning of Old Replicas
-- [ ] **Mini-Task 8.5.1**: Mark old "Blue" replicas as "DRAINING".
-- [ ] **Mini-Task 8.5.2**: Allow 15-second grace period for ongoing in-flight HTTP requests to complete on Blue containers.
-- [ ] **Mini-Task 8.5.3**: Send `SIGTERM` signal to old Blue containers.
-- [ ] **Mini-Task 8.5.4**: If container does not exit after 10 seconds, send `SIGKILL` and remove container.
-- [ ] **Mini-Task 8.5.5**: Update database: mark old deployment as `SUPERSEDED`, mark new deployment as `ACTIVE`.
+- [x] **Mini-Task 8.5.1**: Mark old "Blue" replicas as "DRAINING".
+- [x] **Mini-Task 8.5.2**: Allow 15-second grace period for ongoing in-flight HTTP requests to complete on Blue containers.
+- [x] **Mini-Task 8.5.3**: Send `SIGTERM` signal to old Blue containers.
+- [x] **Mini-Task 8.5.4**: If container does not exit after 10 seconds, send `SIGKILL` and remove container.
+- [x] **Mini-Task 8.5.5**: Update database: mark old deployment as `SUPERSEDED`, mark new deployment as `ACTIVE`.
 
 ---
 

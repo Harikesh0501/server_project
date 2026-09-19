@@ -228,6 +228,25 @@ class DeploymentOrchestrator:
             else:
                 await cls.log_step(deployment.id, f"[!] Notice: Caddy route registered via internal fallback.")
 
+            # Decommission and clean up previous active replicas for this project (Task 8.5)
+            async with async_session_maker() as db:
+                prev_query = (
+                    select(Deployment)
+                    .where(Deployment.project_id == project.id, Deployment.id != deployment.id, Deployment.status == "ACTIVE")
+                    .options(selectinload(Deployment.replicas))
+                )
+                prev_deps = (await db.execute(prev_query)).scalars().all()
+                for old_dep in prev_deps:
+                    old_dep.status = "SUPERSEDED"
+                    for old_rep in (old_dep.replicas or []):
+                        if old_rep.container_id:
+                            try:
+                                await docker_service.stop_container(old_rep.container_id)
+                                await docker_service.remove_container(old_rep.container_id)
+                            except Exception:
+                                pass
+                await db.commit()
+
             # ------------------------------------------------------------------
             # Phase 7: Deployment Completion & Activation
             # ------------------------------------------------------------------
