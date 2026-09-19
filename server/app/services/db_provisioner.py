@@ -75,10 +75,16 @@ class DatabaseProvisionerService:
             db_dir = Path(settings.DATA_DIR) / "databases" / db_id / "data"
             db_dir.mkdir(parents=True, exist_ok=True)
             if os.name != "nt":
-                os.chmod(db_dir, 0o700)
+                os.chmod(db_dir, 0o777)
 
             password = cls.generate_secure_password()
             container_name = f"{'pg' if engine.lower() == 'postgres' else 'redis'}-{db_record.name}-{db_id[:8]}"
+
+            # Ensure clean container slate
+            try:
+                await docker_service.remove_container(container_name, force=True)
+            except Exception:
+                pass
 
             # 3. Provision target container engine
             try:
@@ -105,10 +111,26 @@ class DatabaseProvisionerService:
                     container_id = c_data["Id"]
                     await docker_service.start_container(container_id)
 
-                    # Probe readiness with pg_isready
+                    ins = await docker_service.inspect_container(container_id)
+                    private_ip = ins.get("private_ip")
+
+                    # Probe readiness with direct TCP and pg_isready
                     ready = False
-                    for _ in range(15):
+                    for _ in range(30):
                         await asyncio.sleep(1.5)
+                        if private_ip:
+                            try:
+                                _, writer = await asyncio.wait_for(
+                                    asyncio.open_connection(private_ip, 5432),
+                                    timeout=1.0
+                                )
+                                writer.close()
+                                await writer.wait_closed()
+                                ready = True
+                                break
+                            except Exception:
+                                pass
+
                         try:
                             code, out = await docker_service.exec_run(
                                 container_id,
@@ -133,7 +155,6 @@ class DatabaseProvisionerService:
                     binds = [f"{db_dir}:/data:rw"]
                     cmd = ["redis-server", "--requirepass", password, "--appendonly", "yes"]
 
-
                     c_data = await docker_service.create_container(
                         image=image,
                         name=container_name,
@@ -146,10 +167,26 @@ class DatabaseProvisionerService:
                     container_id = c_data["Id"]
                     await docker_service.start_container(container_id)
 
-                    # Probe readiness with redis-cli ping
+                    ins = await docker_service.inspect_container(container_id)
+                    private_ip = ins.get("private_ip")
+
+                    # Probe readiness with direct TCP and redis-cli ping
                     ready = False
-                    for _ in range(10):
+                    for _ in range(20):
                         await asyncio.sleep(1.0)
+                        if private_ip:
+                            try:
+                                _, writer = await asyncio.wait_for(
+                                    asyncio.open_connection(private_ip, 6379),
+                                    timeout=1.0
+                                )
+                                writer.close()
+                                await writer.wait_closed()
+                                ready = True
+                                break
+                            except Exception:
+                                pass
+
                         try:
                             code, out = await docker_service.exec_run(
                                 container_id,
@@ -193,6 +230,10 @@ class DatabaseProvisionerService:
 
             except Exception as e:
                 db_record.status = "FAILED"
+                try:
+                    await docker_service.remove_container(container_name, force=True)
+                except Exception:
+                    pass
                 await db.commit()
                 logger.error("database_provisioning_failed", id=db_id, error=str(e))
                 raise

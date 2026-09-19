@@ -131,9 +131,19 @@ class DockerService:
 
             # 3. Inspect exec instance for exit code
             inspect_res = await client.get(f"/exec/{exec_id}/json")
-            exit_code = inspect_res.json().get("ExitCode", 0)
+            exit_code = inspect_res.json().get("ExitCode")
+            if exit_code is None:
+                for _ in range(5):
+                    await asyncio.sleep(0.2)
+                    ins = (await client.get(f"/exec/{exec_id}/json")).json()
+                    exit_code = ins.get("ExitCode")
+                    if exit_code is not None:
+                        break
+            if exit_code is None:
+                exit_code = 0
 
             return exit_code, output
+
 
 
     async def start_container(self, container_id: str) -> None:
