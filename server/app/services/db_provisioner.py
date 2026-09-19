@@ -37,7 +37,7 @@ class DatabaseProvisionerService:
         name: str,
         engine: str,
         project_id: str,
-        version: str = "16",
+        version: str | None = None,
         db_session: AsyncSession | None = None
     ) -> ManagedDatabase:
         """
@@ -55,16 +55,25 @@ class DatabaseProvisionerService:
             if not project:
                 raise ValueError(f"Project {project_id} not found.")
 
+            # Resolve default engine version if not explicitly provided or mismatched
+            clean_engine = engine.lower().strip()
+            if clean_engine == "postgres":
+                target_version = version if (version and version != "7") else "16"
+            elif clean_engine == "redis":
+                target_version = version if (version and version != "16") else "7"
+            else:
+                target_version = version or "latest"
+
             # 2. Initialize Database record
             clean_name = name.lower().strip().replace(" ", "-")
             db_record = ManagedDatabase(
                 project_id=project_id,
                 name=clean_name,
-                engine=engine.lower(),
-                version=version,
-                port=5432 if engine.lower() == "postgres" else 6379,
-                database_name=clean_name.replace("-", "_") if engine.lower() == "postgres" else "0",
-                username="postgres" if engine.lower() == "postgres" else "default",
+                engine=clean_engine,
+                version=target_version,
+                port=5432 if clean_engine == "postgres" else 6379,
+                database_name=clean_name.replace("-", "_") if clean_engine == "postgres" else "0",
+                username="postgres" if clean_engine == "postgres" else "default",
                 status="PROVISIONING"
             )
             db.add(db_record)
@@ -78,7 +87,7 @@ class DatabaseProvisionerService:
                 os.chmod(db_dir, 0o777)
 
             password = cls.generate_secure_password()
-            container_name = f"{'pg' if engine.lower() == 'postgres' else 'redis'}-{db_record.name}-{db_id[:8]}"
+            container_name = f"{'pg' if clean_engine == 'postgres' else 'redis'}-{db_record.name}-{db_id[:8]}"
 
             # Ensure clean container slate
             try:
@@ -88,9 +97,9 @@ class DatabaseProvisionerService:
 
             # 3. Provision target container engine
             try:
-                if engine.lower() == "postgres":
+                if clean_engine == "postgres":
                     # Task 10.2: PostgreSQL 16 Isolated Provisioning
-                    image = f"postgres:{version}-alpine" if version else "postgres:16-alpine"
+                    image = f"postgres:{target_version}-alpine"
                     await docker_service.pull_image(image)
                     envs = [
                         f"POSTGRES_USER={db_record.username}",
@@ -150,7 +159,7 @@ class DatabaseProvisionerService:
 
                 else:
                     # Task 10.3: Redis 7 Isolated Provisioning
-                    image = f"redis:{version}-alpine" if version else "redis:7-alpine"
+                    image = f"redis:{target_version}-alpine"
                     await docker_service.pull_image(image)
                     binds = [f"{db_dir}:/data:rw"]
                     cmd = ["redis-server", "--requirepass", password, "--appendonly", "yes"]
