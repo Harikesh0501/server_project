@@ -8,6 +8,8 @@ from app.config import settings
 from app.database import init_db
 from app.api.v1.router import api_v1_router
 from app.exceptions import rfc7807_exception_handler
+from app.services.autoscaler import autoscaler_daemon
+
 
 # Configure structlog
 structlog.configure(
@@ -32,9 +34,12 @@ async def lifespan(app: FastAPI):
     """Platform startup and shutdown lifespan management."""
     settings.DATA_DIR.mkdir(parents=True, exist_ok=True)
     await init_db()
+    autoscaler_daemon.start()
     logger.info("platform_started", app=settings.APP_NAME, version=settings.APP_VERSION, host=settings.HOST, port=settings.PORT)
     yield
+    await autoscaler_daemon.stop()
     logger.info("platform_shutdown", app=settings.APP_NAME)
+
 
 app = FastAPI(
     title=settings.APP_NAME,

@@ -408,41 +408,41 @@
 ## EPIC-09: Dynamic Horizontal Autoscaler Daemon (HPA) & Real-Time Metrics
 
 ### Task 9.1: Real-Time Docker Engine Metrics Collector Daemon
-- [ ] **Mini-Task 9.1.1**: Build `AutoscalerDaemon` in Python running as a standalone background service.
-- [ ] **Mini-Task 9.1.2**: Implement metrics collector connecting to `/var/run/docker.sock` streaming container stats.
-- [ ] **Mini-Task 9.1.3**: Calculate precise CPU percentage:
+- [x] **Mini-Task 9.1.1**: Build `AutoscalerDaemon` in Python running as a standalone background service.
+- [x] **Mini-Task 9.1.2**: Implement metrics collector connecting to `/var/run/docker.sock` streaming container stats.
+- [x] **Mini-Task 9.1.3**: Calculate precise CPU percentage:
   $$\text{CPU \%} = \frac{\Delta \text{container\_cpu}}{\Delta \text{system\_cpu}} \times \text{number\_of\_cpus} \times 100$$
-- [ ] **Mini-Task 9.1.4**: Calculate Memory usage percentage and active TCP socket connections.
-- [ ] **Mini-Task 9.1.5**: Sample metrics on a strict 5-second interval and maintain a 30-second rolling window per deployment.
+- [x] **Mini-Task 9.1.4**: Calculate Memory usage percentage and active TCP socket connections.
+- [x] **Mini-Task 9.1.5**: Sample metrics on a strict 5-second interval and maintain a 30-second rolling window per deployment.
 
 ### Task 9.2: Scale-Out Execution Engine
-- [ ] **Mini-Task 9.2.1**: Evaluate cluster load: check if rolling average CPU exceeds `targetCpuPercent` (default 75%).
-- [ ] **Mini-Task 9.2.2**: Verify current replica count is less than `maxReplicas` (default 10).
-- [ ] **Mini-Task 9.2.3**: Determine scale increment: add 1 replica (or proportional to load spike).
-- [ ] **Mini-Task 9.2.4**: Spawn new container replica `Replica N+1` on `deploy-private-net`.
-- [ ] **Mini-Task 9.2.5**: Execute health check probe on new replica until HTTP 200 OK.
-- [ ] **Mini-Task 9.2.6**: Dynamically append new replica IP to Caddy upstream pool via Admin API.
-- [ ] **Mini-Task 9.2.7**: Insert record into `autoscale_events` table (`action: "SCALE_OUT"`, `new_replicas: N+1`).
+- [x] **Mini-Task 9.2.1**: Evaluate cluster load: check if rolling average CPU exceeds `targetCpuPercent` (default 75%).
+- [x] **Mini-Task 9.2.2**: Verify current replica count is less than `maxReplicas` (default 10).
+- [x] **Mini-Task 9.2.3**: Determine scale increment: add 1 replica (or proportional to load spike).
+- [x] **Mini-Task 9.2.4**: Spawn new container replica `Replica N+1` on `deploy-private-net`.
+- [x] **Mini-Task 9.2.5**: Execute health check probe on new replica until HTTP 200 OK.
+- [x] **Mini-Task 9.2.6**: Dynamically append new replica IP to Caddy upstream pool via Admin API.
+- [x] **Mini-Task 9.2.7**: Insert record into `autoscale_events` table (`action: "SCALE_OUT"`, `new_replicas: N+1`).
 
 ### Task 9.3: Scale-In & Cooldown Management Engine
-- [ ] **Mini-Task 9.3.1**: Evaluate cluster load: check if rolling average CPU drops below 30% and replicas > `minReplicas` (default 3).
-- [ ] **Mini-Task 9.3.2**: Start 300-second (5-minute) cooldown timer.
-- [ ] **Mini-Task 9.3.3**: If load spikes above 50% at any point during cooldown, cancel scale-in immediately.
-- [ ] **Mini-Task 9.3.4**: After full cooldown completion, select oldest surplus replica for decommissioning.
-- [ ] **Mini-Task 9.3.5**: Remove replica IP from Caddy upstream pool.
-- [ ] **Mini-Task 9.3.6**: Gracefully drain and stop surplus container, freeing host RAM and CPU.
-- [ ] **Mini-Task 9.3.7**: Insert record into `autoscale_events` table (`action: "SCALE_IN"`, `new_replicas: N-1`).
+- [x] **Mini-Task 9.3.1**: Evaluate cluster load: check if rolling average CPU drops below 30% and replicas > `minReplicas` (default 3).
+- [x] **Mini-Task 9.3.2**: Start 300-second (5-minute) cooldown timer.
+- [x] **Mini-Task 9.3.3**: If load spikes above 50% at any point during cooldown, cancel scale-in immediately.
+- [x] **Mini-Task 9.3.4**: After full cooldown completion, select oldest surplus replica for decommissioning.
+- [x] **Mini-Task 9.3.5**: Remove replica IP from Caddy upstream pool.
+- [x] **Mini-Task 9.3.6**: Gracefully drain and stop surplus container, freeing host RAM and CPU.
+- [x] **Mini-Task 9.3.7**: Insert record into `autoscale_events` table (`action: "SCALE_IN"`, `new_replicas: N-1`).
 
 ### Task 9.4: High-Availability Baseline Enforcement
-- [ ] **Mini-Task 9.4.1**: Enforce hard lower floor: replica count can NEVER drop below `minReplicas` (default 3).
-- [ ] **Mini-Task 9.4.2**: Implement auto-healing watchdog: if any baseline replica crashes or exits unexpectedly:
+- [x] **Mini-Task 9.4.1**: Enforce hard lower floor: replica count can NEVER drop below `minReplicas` (default 3).
+- [x] **Mini-Task 9.4.2**: Implement auto-healing watchdog: if any baseline replica crashes or exits unexpectedly:
   - Detect dead container within 5 seconds.
   - Remove dead IP from Caddy upstream pool.
   - Automatically boot replacement replica.
   - Verify health and re-add to Caddy upstream pool.
 
 ### Task 9.5: Real-Time Metrics Streaming & TUI Engine (`deploy top`)
-- [ ] **Mini-Task 9.5.1**: Implement `GET /api/v1/deployments/{id}/metrics` streaming SSE metrics every 2 seconds.
+- [x] **Mini-Task 9.5.1**: Implement `GET /api/v1/deployments/{id}/metrics` streaming SSE metrics every 2 seconds.
 - [ ] **Mini-Task 9.5.2**: Build terminal dashboard in Node.js using `blessed` or `cli-table3` with ANSI color charts.
 - [ ] **Mini-Task 9.5.3**: Render active replica table showing: Container ID, Private IP, CPU %, RAM MB, and Health State.
 - [ ] **Mini-Task 9.5.4**: Render live graph showing historical scaling events and average CPU utilization.

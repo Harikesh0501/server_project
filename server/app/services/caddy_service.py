@@ -70,11 +70,17 @@ class CaddyService:
                     # Update existing route
                     res = await client.patch(f"{self.admin_url}/id/{route_id}", json=route_config)
                 else:
-                    # Append new route to first HTTP server routes
+                    # Prepend new route at index 0 so dynamic subdomains match before default routes
                     res = await client.post(
-                        f"{self.admin_url}/config/apps/http/servers/srv0/routes",
+                        f"{self.admin_url}/config/apps/http/servers/srv0/routes/0",
                         json=route_config
                     )
+                    if res.status_code not in (200, 201):
+                        # Fallback append if server route array has no elements yet
+                        res = await client.post(
+                            f"{self.admin_url}/config/apps/http/servers/srv0/routes",
+                            json=route_config
+                        )
 
                 if res.status_code in (200, 201):
                     logger.info("caddy_route_configured", host=full_host, upstreams=upstream_ips)
