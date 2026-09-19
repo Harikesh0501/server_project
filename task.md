@@ -65,7 +65,7 @@
 - [ ] **Mini-Task 0.5.1**: Identify active network interface (`ip -br a` or `ip link`, e.g. `eth0`, `enp3s0`, `wlan0`).
 - [ ] **Mini-Task 0.5.2**: Configure router DHCP reservation (bind friend's laptop MAC address to static LAN IP, e.g. `192.168.1.150`), OR configure static IP in `/etc/netplan/01-netcfg.yaml`.
 - [ ] **Mini-Task 0.5.3**: Apply netplan settings (`sudo netplan apply`) and verify DNS gateway connectivity (`ping -c 3 1.1.1.1` and `ping -c 3 google.com`).
-- [ ] **Mini-Task 0.5.4**: Add local domain mapping to Linux `/etc/hosts`: `127.0.0.1 deploy.local api.deploy.local registry.deploy.local`.
+- [x] **Mini-Task 0.5.4**: Add local domain mapping to Linux `/etc/hosts`: `127.0.0.1 deploy.local api.deploy.local registry.deploy.local`.
 - [ ] **Mini-Task 0.5.5**: Configure user's Windows development laptop `C:\Windows\System32\drivers\etc\hosts` to point `deploy.local`, `*.deploy.local` to the server LAN IP (`192.168.1.150`).
 
 ### Task 0.6: OpenSSH Server Production Hardening & Windows-to-Linux Key-Based Auth
@@ -73,7 +73,7 @@
 - [ ] **Mini-Task 0.6.2**: Copy public key (`id_ed25519.pub`) to Linux server's `~/.ssh/authorized_keys` and set `chmod 700 ~/.ssh && chmod 600 ~/.ssh/authorized_keys`.
 - [ ] **Mini-Task 0.6.3**: Configure `/etc/ssh/sshd_config`: disable root login (`PermitRootLogin no`), enforce public key authentication (`PubkeyAuthentication yes`), set `MaxAuthTries 3`.
 - [ ] **Mini-Task 0.6.4**: Restart SSH service (`sudo systemctl restart ssh`) and verify passwordless SSH connection from Windows PowerShell (`ssh deployadmin@192.168.1.150`).
-- [ ] **Mini-Task 0.6.5**: Install and configure `ufw` (Uncomplicated Firewall): allow SSH port 22, HTTP port 80, HTTPS port 443, Docker registry port 5000, and enable UFW (`sudo ufw enable`).
+- [x] **Mini-Task 0.6.5**: Install and configure `ufw` (Uncomplicated Firewall): allow SSH port 22, HTTP port 80, HTTPS port 443, Docker registry port 5000, and enable UFW (`sudo ufw enable`).
 
 ### Task 0.7: Core Platform Toolchain & Container Runtime Installation
 - [x] **Mini-Task 0.7.1**: Perform full OS system update and security patching (`sudo apt update && sudo apt upgrade -y && sudo apt install -y curl wget git htop net-tools ca-certificates gnupg lsb-release`).
@@ -125,7 +125,7 @@
 ## EPIC-02: Host Network Topology, Private Bridge, Firewall & Edge Caddy Ingress
 
 ### Task 2.1: Isolated Docker Bridge Network Architecture
-- [ ] **Mini-Task 2.1.1**: Create dedicated Docker bridge network `deploy-private-net` with subnet `172.20.0.0/16` and gateway `172.20.0.1`.
+- [x] **Mini-Task 2.1.1**: Create dedicated Docker bridge network `deploy-private-net` with subnet `172.28.0.0/16` and gateway `172.28.0.1`.
 - [ ] **Mini-Task 2.1.2**: Configure internal DNS resolution inside `deploy-private-net` so containers resolve by container name.
 - [ ] **Mini-Task 2.1.3**: Verify inter-container communication is restricted: containers can only talk to each other if attached to the same project network.
 - [ ] **Mini-Task 2.1.4**: Implement automated cleanup script removing dangling virtual network interfaces (veth pairs) on container deletion.
@@ -138,9 +138,9 @@
 - [ ] **Mini-Task 2.2.5**: Configure SYN-flood protection rules in iptables (`limit --limit 25/minute --limit-burst 100`).
 
 ### Task 2.3: Caddy 2 Reverse Proxy Edge Gateway Setup
-- [ ] **Mini-Task 2.3.1**: Deploy Caddy 2 as a dedicated host systemd service or host-networking container (`/etc/caddy/Caddyfile`).
-- [ ] **Mini-Task 2.3.2**: Enable Caddy Admin API listening strictly on `127.0.0.1:2019` with authentication enabled.
-- [ ] **Mini-Task 2.3.3**: Configure global Caddy defaults: HTTP/3 (QUIC) enabled, strict TLS 1.3 ciphers, and gzip/zstd compression.
+- [x] **Mini-Task 2.3.1**: Deploy Caddy 2 as a dedicated host systemd service or host-networking container (`/etc/caddy/Caddyfile`).
+- [x] **Mini-Task 2.3.2**: Enable Caddy Admin API listening strictly on `127.0.0.1:2019` with authentication enabled.
+- [x] **Mini-Task 2.3.3**: Configure global Caddy defaults: HTTP/3 (QUIC) enabled, strict TLS 1.3 ciphers, and gzip/zstd compression.
 - [ ] **Mini-Task 2.3.4**: Configure dynamic JSON configuration loading endpoint (`POST /load`) for runtime upstream updates without process reload.
 - [ ] **Mini-Task 2.3.5**: Configure logging pipeline exporting structured JSON access logs to `/var/log/deploy/caddy_access.log`.
 
@@ -154,7 +154,7 @@
 ### Task 2.5: Edge Ingress WAF & Attack Mitigation
 - [ ] **Mini-Task 2.5.1**: Implement Caddy route matcher dropping requests containing `/.env*`, `/.git*`, and `*.config*` with HTTP 403 Forbidden.
 - [ ] **Mini-Task 2.5.2**: Implement directory traversal filter blocking requests with `../` or encoded traversal sequences (`%2e%2e%2f`).
-- [ ] **Mini-Task 2.5.3**: Inject mandatory security headers on all reverse-proxied responses:
+- [x] **Mini-Task 2.5.3**: Inject mandatory security headers on all reverse-proxied responses:
   - `X-Content-Type-Options: nosniff`
   - `X-Frame-Options: SAMEORIGIN`
   - `X-XSS-Protection: 1; mode=block`
@@ -167,10 +167,10 @@
 ## EPIC-03: Local Private Container Registry & BuildKit Sandbox Engine
 
 ### Task 3.1: Host-Local Docker Registry v2 Deployment
-- [ ] **Mini-Task 3.1.1**: Deploy official `registry:2` container bound strictly to `127.0.0.1:5000` on the host.
-- [ ] **Mini-Task 3.1.2**: Mount persistent storage volume `/var/lib/deploy/registry` for storing container image blobs and manifests.
+- [x] **Mini-Task 3.1.1**: Deploy official `registry:2` container bound strictly to `127.0.0.1:5000` on the host.
+- [x] **Mini-Task 3.1.2**: Mount persistent storage volume `/var/lib/deploy/registry` for storing container image blobs and manifests.
 - [ ] **Mini-Task 3.1.3**: Configure Registry HTTP API delete enablement (`REGISTRY_STORAGE_DELETE_ENABLED: "true"`).
-- [ ] **Mini-Task 3.1.4**: Configure `/etc/docker/daemon.json` to trust `127.0.0.1:5000` as an insecure registry for zero-overhead local pushing.
+- [x] **Mini-Task 3.1.4**: Configure `/etc/docker/daemon.json` to trust `127.0.0.1:5000` as an insecure registry for zero-overhead local pushing.
 - [ ] **Mini-Task 3.1.5**: Write automated health check testing `GET http://127.0.0.1:5000/v2/` returning HTTP 200.
 
 ### Task 3.2: Docker BuildKit Daemon & Sandboxed Compilation

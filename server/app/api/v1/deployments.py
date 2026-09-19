@@ -1,3 +1,4 @@
+import asyncio
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -9,6 +10,7 @@ from app.models.project import Project
 from app.models.deployment import Deployment
 from app.schemas.deployment import DeploymentCreate, DeploymentResponse, ReplicaResponse
 from app.services.docker_service import docker_service
+from app.worker.orchestrator import DeploymentOrchestrator
 
 router = APIRouter(prefix="/deployments", tags=["Deployments"])
 
@@ -74,6 +76,9 @@ async def create_deployment(payload: DeploymentCreate, db: AsyncSession = Depend
     db.add(deployment)
     await db.commit()
     await db.refresh(deployment)
+
+    # Dispatch automated build, containerization & Caddy routing pipeline in background
+    asyncio.create_task(DeploymentOrchestrator.run_pipeline(deployment.id))
 
     return _format_deployment_response(deployment, project)
 

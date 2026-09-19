@@ -1,3 +1,4 @@
+import asyncio
 import os
 import shutil
 import subprocess
@@ -13,6 +14,7 @@ from app.models.project import Project
 from app.models.deployment import Deployment
 from app.schemas.deployment import DeploymentResponse
 from app.api.v1.deployments import _format_deployment_response
+from app.worker.orchestrator import DeploymentOrchestrator
 
 router = APIRouter(prefix="/git", tags=["Git Integration"])
 
@@ -165,4 +167,8 @@ async def git_deploy(payload: GitDeployRequest, db: AsyncSession = Depends(get_d
     await db.commit()
     await db.refresh(deployment)
 
+    # Dispatch automated build & Caddy routing pipeline
+    asyncio.create_task(DeploymentOrchestrator.run_pipeline(deployment.id))
+
     return _format_deployment_response(deployment, project)
+
