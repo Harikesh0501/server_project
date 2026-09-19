@@ -97,7 +97,54 @@ class SecretManager:
                 continue
         return env_list
 
+    async def set_secret(
+        self,
+        project_id: str,
+        key: str,
+        value: str,
+        db: AsyncSession,
+        is_system: bool = False
+    ) -> Secret:
+        """Encrypts and upserts a secret record in database."""
+        ciphertext, nonce = self.encrypt(project_id, value)
+        query = select(Secret).where(Secret.project_id == project_id, Secret.key == key)
+        result = await db.execute(query)
+        existing = result.scalar_one_or_none()
+
+        if existing:
+            existing.encrypted_value = ciphertext
+            existing.nonce = nonce
+            existing.is_system = is_system
+            await db.commit()
+            await db.refresh(existing)
+            return existing
+        else:
+            new_sec = Secret(
+                project_id=project_id,
+                key=key,
+                encrypted_value=ciphertext,
+                nonce=nonce,
+                is_system=is_system
+            )
+            db.add(new_sec)
+            await db.commit()
+            await db.refresh(new_sec)
+            return new_sec
+
+    async def get_decrypted_secret(self, project_id: str, key: str, db: AsyncSession) -> str | None:
+        """Retrieves and decrypts a specific secret value in volatile memory."""
+        query = select(Secret).where(Secret.project_id == project_id, Secret.key == key)
+        result = await db.execute(query)
+        sec = result.scalar_one_or_none()
+        if not sec:
+            return None
+        try:
+            return self.decrypt(project_id, sec.encrypted_value, sec.nonce)
+        except InvalidTag:
+            return None
+
 class SecretRedactor:
+
     """
     Streaming Log Secret Masking & Redaction Engine (Task 4.4).
     Intercepts logs before persistence or streaming and scrubs all
