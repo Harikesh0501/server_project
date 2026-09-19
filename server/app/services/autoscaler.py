@@ -112,6 +112,12 @@ class AutoscalerDaemon:
         for replica in deployment.replicas:
             container_id = replica.container_id
             try:
+                inspection = await docker_service.inspect_container(container_id)
+                if not inspection.get("running"):
+                    logger.warning("replica_container_not_running", container_id=container_id, status=inspection.get("status"))
+                    dead_replicas.append(replica)
+                    continue
+
                 stats = await docker_service.get_container_stats(container_id)
                 replica_stats_list.append(stats)
                 healthy_replicas.append(replica)
@@ -368,7 +374,7 @@ class AutoscalerDaemon:
                 pass
 
             # Spawn replacement replica with same index
-            new_name = f"{project.subdomain}-{deployment.id[:8]}-{dead.replica_index}-heal"
+            new_name = f"{project.subdomain}-{deployment.id[:8]}-{dead.replica_index}-h{int(time.time()) % 10000}"
             async with async_session_maker() as db:
                 secret_envs = await secret_manager.get_decrypted_env_list(project.id, db)
 
