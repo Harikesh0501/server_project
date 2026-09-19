@@ -452,32 +452,32 @@
 ## EPIC-10: Render-Style Managed Databases (PostgreSQL 16 & Redis 7) Engine
 
 ### Task 10.1: Managed Database Provisioner Service
-- [ ] **Mini-Task 10.1.1**: Build `DatabaseProvisionerService` in Python (`server/app/services/db_provisioner.py`).
-- [ ] **Mini-Task 10.1.2**: Implement cryptographically secure password generator (32 characters, alphanumeric + symbols).
-- [ ] **Mini-Task 10.1.3**: Create host storage directory `/var/lib/deploy/databases/{db_id}/data` with restricted permissions (`chmod 700`).
-- [ ] **Mini-Task 10.1.4**: Implement `POST /api/v1/databases` accepting `name`, `type` (`postgres` | `redis`), and `project_id`.
+- [x] **Mini-Task 10.1.1**: Build `DatabaseProvisionerService` in Python (`server/app/services/db_provisioner.py`).
+- [x] **Mini-Task 10.1.2**: Implement cryptographically secure password generator (32 characters, alphanumeric + symbols).
+- [x] **Mini-Task 10.1.3**: Create host storage directory `/var/lib/deploy/databases/{db_id}/data` with restricted permissions (`chmod 700`).
+- [x] **Mini-Task 10.1.4**: Implement `POST /api/v1/databases` accepting `name`, `type` (`postgres` | `redis`), and `project_id`.
 
 ### Task 10.2: PostgreSQL 16 Isolated Container Provisioning
-- [ ] **Mini-Task 10.2.1**: Pull and run official `postgres:16-alpine` attached to `deploy-private-net`.
-- [ ] **Mini-Task 10.2.2**: Mount persistent host directory `/var/lib/deploy/databases/{db_id}/data` to `/var/lib/postgresql/data`.
-- [ ] **Mini-Task 10.2.3**: Inject environment variables: `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`.
-- [ ] **Mini-Task 10.2.4**: Do NOT expose port 5432 to host; database is accessible ONLY within `deploy-private-net`.
-- [ ] **Mini-Task 10.2.5**: Execute `pg_isready` probe inside container to confirm database is operational.
+- [x] **Mini-Task 10.2.1**: Pull and run official `postgres:16-alpine` attached to `deploy-private-net`.
+- [x] **Mini-Task 10.2.2**: Mount persistent host directory `/var/lib/deploy/databases/{db_id}/data` to `/var/lib/postgresql/data`.
+- [x] **Mini-Task 10.2.3**: Inject environment variables: `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`.
+- [x] **Mini-Task 10.2.4**: Do NOT expose port 5432 to host; database is accessible ONLY within `deploy-private-net`.
+- [x] **Mini-Task 10.2.5**: Execute `pg_isready` probe inside container to confirm database is operational.
 
 ### Task 10.3: Redis 7 Isolated Container Provisioning
-- [ ] **Mini-Task 10.3.1**: Pull and run official `redis:7-alpine` attached to `deploy-private-net`.
-- [ ] **Mini-Task 10.3.2**: Mount persistent host directory `/var/lib/deploy/databases/{db_id}/data` to `/data`.
-- [ ] **Mini-Task 10.3.3**: Launch with password protection (`--requirepass {generated_password}`) and AOF persistence (`--appendonly yes`).
-- [ ] **Mini-Task 10.3.4**: Execute `redis-cli ping` probe to confirm Redis is operational.
+- [x] **Mini-Task 10.3.1**: Pull and run official `redis:7-alpine` attached to `deploy-private-net`.
+- [x] **Mini-Task 10.3.2**: Mount persistent host directory `/var/lib/deploy/databases/{db_id}/data` to `/data`.
+- [x] **Mini-Task 10.3.3**: Launch with password protection (`--requirepass {generated_password}`) and AOF persistence (`--appendonly yes`).
+- [x] **Mini-Task 10.3.4**: Execute `redis-cli ping` probe to confirm Redis is operational.
 
 ### Task 10.4: Connection String Generation, Injection & Automated Backups
-- [ ] **Mini-Task 10.4.1**: Construct internal connection strings:
+- [x] **Mini-Task 10.4.1**: Construct internal connection strings:
   - `postgresql://{user}:{password}@pg-{name}.deploy-private-net:5432/{dbname}`
   - `redis://:{password}@redis-{name}.deploy-private-net:6379/0`
-- [ ] **Mini-Task 10.4.2**: Encrypt connection string with AES-256-GCM and store in `managed_databases` table.
-- [ ] **Mini-Task 10.4.3**: Automatically inject `DATABASE_URL` or `REDIS_URL` into connected application container environment variables.
-- [ ] **Mini-Task 10.4.4**: Implement automated daily backup script (`server/scripts/backup_db.py`): executes `pg_dump` and saves compressed `.sql.gz` to `/var/lib/deploy/backups/`.
-- [ ] **Mini-Task 10.4.5**: Implement database restoration endpoint (`POST /api/v1/databases/{id}/restore`).
+- [x] **Mini-Task 10.4.2**: Encrypt connection string with AES-256-GCM and store in `managed_databases` table.
+- [x] **Mini-Task 10.4.3**: Automatically inject `DATABASE_URL` or `REDIS_URL` into connected application container environment variables.
+- [x] **Mini-Task 10.4.4**: Implement automated daily backup script (`server/scripts/backup_db.py`): executes `pg_dump` and saves compressed `.sql.gz` to `/var/lib/deploy/backups/`.
+- [x] **Mini-Task 10.4.5**: Implement database restoration endpoint (`POST /api/v1/databases/{id}/restore`).
 
 ---
 

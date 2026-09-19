@@ -40,36 +40,73 @@ class DockerService:
         port: int,
         cpu_quota: int = 100000, # 1.0 CPU Core
         memory_bytes: int = 512 * 1024 * 1024, # 512 MB
-        network: str = settings.DOCKER_PRIVATE_NETWORK
+        network: str = settings.DOCKER_PRIVATE_NETWORK,
+        binds: list[str] | None = None,
+        cmd: list[str] | None = None
     ) -> dict:
         """
         Creates an isolated container with cgroups resource bounds,
-        network attachment, and in-memory environment variables.
+        network attachment, persistent volume mounts, and in-memory environment variables.
         """
+        host_config = {
+            "NetworkMode": network,
+            "CpuQuota": cpu_quota,
+            "CpuPeriod": 100000,
+            "Memory": memory_bytes,
+            "MemorySwap": memory_bytes,
+            "RestartPolicy": {"Name": "unless-stopped"},
+            "SecurityOpt": ["no-new-privileges:true"]
+        }
+        if binds:
+            host_config["Binds"] = binds
+
         payload = {
             "Image": image,
             "Env": env_vars,
-            "HostConfig": {
-                "NetworkMode": network,
-                "CpuQuota": cpu_quota,
-                "CpuPeriod": 100000,
-                "Memory": memory_bytes,
-                "MemorySwap": memory_bytes,
-                "RestartPolicy": {"Name": "unless-stopped"},
-                "SecurityOpt": ["no-new-privileges:true"]
-            },
+            "HostConfig": host_config,
             "Labels": {
                 "managed_by": "sovereign-cloud",
                 "app_name": name,
                 "app_port": str(port)
             }
         }
+        if cmd:
+            payload["Cmd"] = cmd
 
         async with self._get_client() as client:
             res = await client.post(f"/containers/create?name={name}", json=payload)
             if res.status_code != 201:
                 raise RuntimeError(f"Docker container creation failed: {res.text}")
             return res.json()
+
+    async def exec_run(self, container_id: str, cmd: list[str]) -> tuple[int, str]:
+        """
+        Executes a command synchronously inside a running container via Docker Engine API.
+        Returns (exit_code, output_text).
+        """
+        async with self._get_client() as client:
+            # 1. Create exec instance
+            create_payload = {
+                "AttachStdout": True,
+                "AttachStderr": True,
+                "Cmd": cmd
+            }
+            res = await client.post(f"/containers/{container_id}/exec", json=create_payload)
+            if res.status_code != 201:
+                raise RuntimeError(f"Docker exec create failed for {container_id}: {res.text}")
+            exec_id = res.json()["Id"]
+
+            # 2. Start exec instance
+            start_payload = {"Detach": False, "Tty": False}
+            start_res = await client.post(f"/exec/{exec_id}/start", json=start_payload)
+            output = start_res.text
+
+            # 3. Inspect exec instance for exit code
+            inspect_res = await client.get(f"/exec/{exec_id}/json")
+            exit_code = inspect_res.json().get("ExitCode", 0)
+
+            return exit_code, output
+
 
     async def start_container(self, container_id: str) -> None:
         """Starts a created container."""
