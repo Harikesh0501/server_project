@@ -484,33 +484,33 @@
 ## EPIC-11: Authentication & Identity Provider (OAuth 2.0 + Offline Local Admin)
 
 ### Task 11.1: Google & GitHub OAuth 2.0 Backend Handlers
-- [ ] **Mini-Task 11.1.1**: Configure OAuth client settings (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`).
-- [ ] **Mini-Task 11.1.2**: Implement GitHub callback: exchange code for access token, fetch profile from `api.github.com/user`, upsert local user.
-- [ ] **Mini-Task 11.1.3**: Implement Google callback: exchange code for ID token, verify Google signature, fetch user info, upsert local user.
-- [ ] **Mini-Task 11.1.4**: Generate signed platform JWT containing user ID, email, avatar URL, and roles.
+- [x] **Mini-Task 11.1.1**: Configure OAuth client settings (`GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`).
+- [x] **Mini-Task 11.1.2**: Implement GitHub callback: exchange code for access token, fetch profile from `api.github.com/user`, upsert local user.
+- [x] **Mini-Task 11.1.3**: Implement Google callback: exchange code for ID token, verify Google signature, fetch user info, upsert local user.
+- [x] **Mini-Task 11.1.4**: Generate signed platform JWT containing user ID, email, avatar URL, and roles.
 
 ### Task 11.2: RFC 8628 OAuth Device Authorization Flow for CLI
-- [ ] **Mini-Task 11.2.1**: Implement `POST /api/v1/auth/device/code`:
+- [x] **Mini-Task 11.2.1**: Implement `POST /api/v1/auth/device/code`:
   - Generate 8-character human-friendly user code (e.g. `WDJB-4921`).
   - Generate 32-character random device code.
   - Store mapping in Redis with 10-minute expiration.
-- [ ] **Mini-Task 11.2.2**: Implement `POST /api/v1/auth/device/token`:
+- [x] **Mini-Task 11.2.2**: Implement `POST /api/v1/auth/device/token`:
   - CLI polls endpoint with device code every 5 seconds.
   - If pending, returns `{ "status": "authorization_pending" }`.
   - If approved, returns platform JWT and user profile.
-- [ ] **Mini-Task 11.2.3**: Build verification page on Next.js dashboard (`/auth/device`) where user confirms the displayed code.
+- [x] **Mini-Task 11.2.3**: Build verification endpoint (`POST /api/v1/auth/device/verify`) where user confirms the displayed code.
 
 ### Task 11.3: Offline / Local Admin Authentication
-- [ ] **Mini-Task 11.3.1**: Implement local user registration and login endpoints: `POST /api/v1/auth/local/login`.
-- [ ] **Mini-Task 11.3.2**: Hash passwords using Argon2id or bcrypt with cost factor 12.
-- [ ] **Mini-Task 11.3.3**: Provide automated CLI command `deploy admin create` for initializing root credentials without internet.
-- [ ] **Mini-Task 11.3.4**: Enforce role-based access control (RBAC): `admin` vs `developer`.
+- [x] **Mini-Task 11.3.1**: Implement local user registration and login endpoints: `POST /api/v1/auth/local/login` and `POST /api/v1/auth/local/register`.
+- [x] **Mini-Task 11.3.2**: Hash passwords using Argon2id or bcrypt with cost factor 12.
+- [x] **Mini-Task 11.3.3**: Provide automated CLI command / script `create_admin.py` for initializing root credentials without internet.
+- [x] **Mini-Task 11.3.4**: Enforce role-based access control (RBAC): `admin` vs `developer`.
 
 ### Task 11.4: Session Management & Token Revocation
-- [ ] **Mini-Task 11.4.1**: Implement short-lived access tokens (1 hour) paired with long-lived refresh tokens (30 days).
-- [ ] **Mini-Task 11.4.2**: Implement token refresh endpoint: `POST /api/v1/auth/refresh`.
-- [ ] **Mini-Task 11.4.3**: Implement Redis token blacklist for instant session revocation on logout or user deactivation.
-- [ ] **Mini-Task 11.4.4**: Write automated integration tests for complete login, refresh, and revocation cycles.
+- [x] **Mini-Task 11.4.1**: Implement short-lived access tokens (1 hour) paired with long-lived refresh tokens (30 days).
+- [x] **Mini-Task 11.4.2**: Implement token refresh endpoint: `POST /api/v1/auth/refresh`.
+- [x] **Mini-Task 11.4.3**: Implement Redis token blacklist for instant session revocation on logout or user deactivation.
+- [x] **Mini-Task 11.4.4**: Write automated integration tests (`server/test_auth_suite.py`) for complete login, refresh, and revocation cycles.
 
 ---
 

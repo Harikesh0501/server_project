@@ -4,6 +4,7 @@ import Table from 'cli-table3';
 import { apiClient } from './client';
 import { handleDeployRepo } from './commands/repo';
 import { handleEnvSet, handleEnvPush } from './commands/env';
+import { handleLogin, handleRegister, handleWhoami, handleLogout } from './commands/auth';
 
 const program = new Command();
 
@@ -119,4 +120,34 @@ program
     console.log(chalk.green('✔ System scan completed: 0 critical errors detected on host!\n'));
   });
 
+// Authentication Commands (EPIC-11)
+program
+  .command('login')
+  .description('Authenticate with the sovereign cloud platform')
+  .action(async () => {
+    await handleLogin();
+  });
+
+program
+  .command('register')
+  .description('Register a new account on the sovereign cloud platform')
+  .action(async () => {
+    await handleRegister();
+  });
+
+program
+  .command('whoami')
+  .description('Display currently logged in user profile and active session')
+  .action(async () => {
+    await handleWhoami();
+  });
+
+program
+  .command('logout')
+  .description('Log out and revoke active credentials')
+  .action(async () => {
+    await handleLogout();
+  });
+
 program.parse(process.argv);
+

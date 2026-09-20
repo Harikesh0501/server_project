@@ -76,6 +76,56 @@ export class ApiClient {
     const response = await this.client.post('/api/v1/projects', payload);
     return response.data;
   }
+
+  // --- Auth APIs (EPIC-11) ---
+
+  async login(payload: { email_or_username: string; password: string }) {
+    const response = await this.client.post('/api/v1/auth/local/login', payload);
+    if (response.data?.access_token) {
+      this.saveConfig({ token: response.data.access_token });
+      this.client.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
+    }
+    return response.data;
+  }
+
+  async register(payload: { email: string; username: string; password: string; full_name?: string }) {
+    const response = await this.client.post('/api/v1/auth/local/register', payload);
+    if (response.data?.access_token) {
+      this.saveConfig({ token: response.data.access_token });
+      this.client.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
+    }
+    return response.data;
+  }
+
+  async getMe() {
+    const response = await this.client.get('/api/v1/auth/me');
+    return response.data;
+  }
+
+  async logout() {
+    try {
+      await this.client.post('/api/v1/auth/logout');
+    } catch {
+      // Ignore server error on logout
+    }
+    this.saveConfig({ token: '' });
+    delete this.client.defaults.headers.common['Authorization'];
+  }
+
+  async requestDeviceCode() {
+    const response = await this.client.post('/api/v1/auth/device/code');
+    return response.data;
+  }
+
+  async pollDeviceToken(device_code: string) {
+    const response = await this.client.post('/api/v1/auth/device/token', { device_code });
+    if (response.data?.access_token) {
+      this.saveConfig({ token: response.data.access_token });
+      this.client.defaults.headers.common['Authorization'] = `Bearer ${response.data.access_token}`;
+    }
+    return response.data;
+  }
 }
 
 export const apiClient = new ApiClient();
+

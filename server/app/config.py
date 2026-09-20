@@ -42,6 +42,12 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
     REFRESH_TOKEN_EXPIRE_DAYS: int = 30
 
+    # OAuth 2.0 Client Credentials
+    GITHUB_CLIENT_ID: str = ""
+    GITHUB_CLIENT_SECRET: str = ""
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+
 
     # Docker Engine API Socket
     DOCKER_SOCKET: str = "/var/run/docker.sock" if os.name != "nt" else "npipe:////./pipe/docker_engine"
